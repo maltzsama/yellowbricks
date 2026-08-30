@@ -23,7 +23,7 @@
       "substitutePath": [
         {
           "from": "${workspaceFolder}",
-          "to": "/root/galileostdio-yellowbricks-datasource"
+          "to": "/root/maltzsama-yellowbricks-datasource"
         }
       ]
     }

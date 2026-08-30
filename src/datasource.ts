@@ -1,26 +1,33 @@
 import { DataSourceInstanceSettings, CoreApp, ScopedVars } from '@grafana/data';
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 
-import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY } from './types';
+import { DatabricksQuery, DataBricksSourceOptions, DEFAULT_QUERY } from './types';
 
-export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
-  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
+export class DataBricksDataSource extends DataSourceWithBackend<DatabricksQuery, DataBricksSourceOptions> {
+  constructor(instanceSettings: DataSourceInstanceSettings<DataBricksSourceOptions>) {
     super(instanceSettings);
   }
 
-  getDefaultQuery(_: CoreApp): Partial<MyQuery> {
-    return DEFAULT_QUERY;
-  }
-
-  applyTemplateVariables(query: MyQuery, scopedVars: ScopedVars) {
+  getDefaultQuery(_: CoreApp): Partial<DatabricksQuery> {
     return {
-      ...query,
-      queryText: getTemplateSrv().replace(query.queryText, scopedVars),
+      ...DEFAULT_QUERY,
+      format: 'table',
+      enableFilter: false,
+      enableGroup: false,
+      enableOrder: false,
+      enablePreview: true,
     };
   }
 
-  filterQuery(query: MyQuery): boolean {
-    // if no query has been provided, prevent the query from being executed
+  applyTemplateVariables(query: DatabricksQuery, scopedVars: ScopedVars) {
+    return {
+      ...query,
+      queryText: getTemplateSrv().replace(query.queryText ?? '', scopedVars),
+    };
+  }
+
+  filterQuery(query: DatabricksQuery): boolean {
+    // No raw query? Ignore.
     return !!query.queryText;
   }
 }
