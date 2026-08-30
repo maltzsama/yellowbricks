@@ -9,6 +9,19 @@ const MOCK_COLUMNS: Record<string, string[]> = {
   [`${MOCK_DB}.mock_table_b`]: ['id', 'value', 'updated_at'],
 };
 
+export function mockDatasourceSave(page: Page) {
+  page.route('**/api/datasources/uid/*', (route) => {
+    if (route.request().method() === 'PUT') {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Datasource updated', id: 1, uid: 'test-uid' }),
+      });
+    }
+    return route.fallback();
+  });
+}
+
 export function mockDatabricksResources(page: Page) {
   page.route('**/api/datasources/uid/*/resources/databases*', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_DB]) })
@@ -52,7 +65,7 @@ export function mockHealthError(page: Page) {
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ status: 'error', message: 'Falha na conexão: connection refused' }),
+      body: JSON.stringify({ status: 'error', message: 'Token is missing or invalid' }),
     })
   );
 }

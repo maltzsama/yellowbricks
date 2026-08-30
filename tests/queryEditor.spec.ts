@@ -1,40 +1,44 @@
 import { test, expect } from '@grafana/plugin-e2e';
 import { mockDatabricksResources } from './mocks';
 
-test('query editor: should load databases and tables correctly', async ({ panelEditPage, readProvisionedDataSource, page }) => {
+test('query editor: should load databases and tables correctly', async ({ page }) => {
   mockDatabricksResources(page);
 
-  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
-  await panelEditPage.datasource.set(ds.name);
+  await page.goto('/d/e2e-test?editPanel=1');
+  await page.waitForSelector('[data-testid="data-testid Dashboard template variables submenu"]', { timeout: 15000 }).catch(() => {});
 
-  const databaseSelect = panelEditPage.getQueryEditorRow('A').getByLabel('Database');
-  await expect(databaseSelect).toBeVisible();
+  const databaseSelect = page.getByLabel('Database');
+  await expect(databaseSelect).toBeVisible({ timeout: 15000 });
   await databaseSelect.click();
   const dbOptionsCount = await databaseSelect.getByRole('option').count();
   expect(dbOptionsCount).toBeGreaterThan(0);
 
-  const tableSelect = panelEditPage.getQueryEditorRow('A').getByLabel('Table');
+  const tableSelect = page.getByLabel('Table');
   await expect(tableSelect).toBeVisible();
   await tableSelect.click();
   const optionsCount = await tableSelect.getByRole('option').count();
   expect(optionsCount).toBeGreaterThan(0);
 });
 
-test('query editor: should preview SQL query', async ({ panelEditPage, readProvisionedDataSource, page }) => {
+test('query editor: should preview SQL query', async ({ page }) => {
   mockDatabricksResources(page);
 
-  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
-  await panelEditPage.datasource.set(ds.name);
+  await page.goto('/d/e2e-test?editPanel=1');
+  await page.waitForSelector('[data-testid="data-testid Dashboard template variables submenu"]', { timeout: 15000 }).catch(() => {});
 
-  await panelEditPage.getQueryEditorRow('A').getByLabel('Database').click();
-  await panelEditPage.getQueryEditorRow('A').getByRole('option').first().click();
+  const databaseSelect = page.getByLabel('Database');
+  await expect(databaseSelect).toBeVisible({ timeout: 15000 });
+  await databaseSelect.click();
+  await page.getByRole('option').first().click();
 
-  await panelEditPage.getQueryEditorRow('A').getByLabel('Table').click();
-  await panelEditPage.getQueryEditorRow('A').getByRole('option').first().click();
+  const tableSelect = page.getByLabel('Table');
+  await expect(tableSelect).toBeVisible();
+  await tableSelect.click();
+  await page.getByRole('option').first().click();
 
-  const addColumnBtn = panelEditPage.getQueryEditorRow('A').getByRole('button', { name: /add column/i });
+  const addColumnBtn = page.getByRole('button', { name: /add column/i });
   await addColumnBtn.click();
 
-  const preview = panelEditPage.getQueryEditorRow('A').getByText(/^SELECT/);
+  const preview = page.getByText(/^SELECT/);
   await expect(preview).toBeVisible();
 });

@@ -2,6 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: 'yellow-bricks'
+    uid: 'yellow-bricks'
     type: 'maltzsama-yellowbricks-datasource'
     access: proxy
     isDefault: false

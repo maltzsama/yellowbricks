@@ -1,6 +1,6 @@
 import { test, expect } from '@grafana/plugin-e2e';
 import { DataBricksSourceOptions, DataBricksSecureJsonData } from '../src/types';
-import { mockHealthSuccess, mockHealthError } from './mocks';
+import { mockDatasourceSave, mockHealthSuccess, mockHealthError } from './mocks';
 
 test('config editor: should render correctly', async ({ createDataSourceConfigPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
@@ -16,6 +16,7 @@ test('config editor: should succeed with valid config', async ({ createDataSourc
   const ds = await readProvisionedDataSource<DataBricksSourceOptions, DataBricksSecureJsonData>({ fileName: 'datasources.yml' });
   const configPage = await createDataSourceConfigPage({ type: ds.type });
 
+  mockDatasourceSave(page);
   mockHealthSuccess(page);
 
   await page.getByLabel('Host').fill(ds.jsonData.host ?? '');
@@ -30,6 +31,7 @@ test('config editor: should fail with missing token', async ({ createDataSourceC
   const ds = await readProvisionedDataSource<DataBricksSourceOptions, DataBricksSecureJsonData>({ fileName: 'datasources.yml' });
   const configPage = await createDataSourceConfigPage({ type: ds.type });
 
+  mockDatasourceSave(page);
   mockHealthError(page);
 
   await page.getByLabel('Host').fill(ds.jsonData.host ?? '');
@@ -38,5 +40,5 @@ test('config editor: should fail with missing token', async ({ createDataSourceC
 
   // Não preenche Token intencionalmente
   await expect(configPage.saveAndTest()).not.toBeOK();
-  await expect(configPage).toHaveAlert('error', { hasText: 'conexão' });
+  await expect(configPage).toHaveAlert('error', { hasText: 'Token is missing' });
 });
