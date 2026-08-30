@@ -204,26 +204,53 @@ func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query b
 		}
 	}
 
-	frame := data.NewFrame("response")
-	for _, col := range cols {
-		frame.Fields = append(frame.Fields, data.NewField(col, nil, []string{}))
+	colTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return wrapErr("failed to retrieve column types", err)
 	}
 
-	values := make([]interface{}, len(cols))
-	for i := range values {
+	frame := data.NewFrame("response")
+	for i, col := range cols {
+		colType := strings.ToUpper(colTypes[i].DatabaseTypeName())
+		switch {
+		case strings.Contains(colType, "INT") || strings.Contains(colType, "BIGINT") || strings.Contains(colType, "SMALLINT"):
+			frame.Fields = append(frame.Fields, data.NewField(col, nil, []int64{}))
+		case colType == "FLOAT" || colType == "DOUBLE" || colType == "DECIMAL":
+			frame.Fields = append(frame.Fields, data.NewField(col, nil, []float64{}))
+		case colType == "BOOLEAN":
+			frame.Fields = append(frame.Fields, data.NewField(col, nil, []bool{}))
+		case colType == "TIMESTAMP" || colType == "DATE" || colType == "TIME" || colType == "TIMESTAMP_NTZ" || colType == "TIMESTAMP_LTZ":
+			frame.Fields = append(frame.Fields, data.NewField(col, nil, []time.Time{}))
+		default:
+			frame.Fields = append(frame.Fields, data.NewField(col, nil, []string{}))
+		}
+	}
+
+	scanDests := make([]interface{}, len(cols))
+	for i := range scanDests {
 		var v interface{}
-		values[i] = &v
+		scanDests[i] = &v
 	}
 
 	for rows.Next() {
-		if err := rows.Scan(values...); err != nil {
+		if err := rows.Scan(scanDests...); err != nil {
 			return wrapErr("failed to scan row", err)
 		}
-
-		for i, valPtr := range values {
-			v := *(valPtr.(*interface{}))
-			strVal := fmt.Sprintf("%v", v)
-			frame.Fields[i].Append(strVal)
+		for i, dest := range scanDests {
+			v := *(dest.(*interface{}))
+			colType := strings.ToUpper(colTypes[i].DatabaseTypeName())
+			switch {
+			case strings.Contains(colType, "INT") || strings.Contains(colType, "BIGINT") || strings.Contains(colType, "SMALLINT"):
+				frame.Fields[i].Append(toInt64(v))
+			case colType == "FLOAT" || colType == "DOUBLE" || colType == "DECIMAL":
+				frame.Fields[i].Append(toFloat64(v))
+			case colType == "BOOLEAN":
+				frame.Fields[i].Append(toBool(v))
+			case colType == "TIMESTAMP" || colType == "DATE" || colType == "TIME" || colType == "TIMESTAMP_NTZ" || colType == "TIMESTAMP_LTZ":
+				frame.Fields[i].Append(toTime(v))
+			default:
+				frame.Fields[i].Append(fmt.Sprintf("%v", v))
+			}
 		}
 	}
 
@@ -399,6 +426,60 @@ func (d *Datasource) GetColumns(ctx context.Context, catalog string, database st
 
 	backend.Logger.Info("Columns retrieved", "columns", columns)
 	return columns, nil
+}
+
+func toInt64(v interface{}) int64 {
+	switch val := v.(type) {
+	case int64:
+		return val
+	case float64:
+		return int64(val)
+	case bool:
+		if val {
+			return 1
+		}
+		return 0
+	default:
+		return 0
+	}
+}
+
+func toFloat64(v interface{}) float64 {
+	switch val := v.(type) {
+	case float64:
+		return val
+	case int64:
+		return float64(val)
+	case bool:
+		if val {
+			return 1
+		}
+		return 0
+	default:
+		return 0
+	}
+}
+
+func toBool(v interface{}) bool {
+	switch val := v.(type) {
+	case bool:
+		return val
+	case int64:
+		return val != 0
+	case float64:
+		return val != 0
+	default:
+		return false
+	}
+}
+
+func toTime(v interface{}) time.Time {
+	switch val := v.(type) {
+	case time.Time:
+		return val
+	default:
+		return time.Time{}
+	}
 }
 
 func sendJSON(sender backend.CallResourceResponseSender, data interface{}) error {
