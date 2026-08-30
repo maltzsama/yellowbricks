@@ -226,8 +226,6 @@ func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query b
 
 	catalog := d.config.Catalog
 	adjustedQuery := injectCatalogIntoQuery(catalog, qm.RawSQL)
-	backend.Logger.Info("Running query", "query", adjustedQuery)
-	backend.Logger.Info("Running query", "query", d.config.MaxRows)
 
 	if d.config.MaxRows > 0 {
 		adjustedQuery, err = sanitizeQueryWithLimit(adjustedQuery, d.config.MaxRows)
@@ -236,7 +234,9 @@ func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query b
 		}
 	}
 
-	backend.Logger.Info("Running query", "query", adjustedQuery)
+	if d.config.Debug {
+		backend.Logger.Debug("Running query", "query", adjustedQuery)
+	}
 
 	ctx, cancel := d.contextWithTimeout(ctx)
 	defer cancel()
@@ -466,7 +466,9 @@ func (d *Datasource) GetTables(ctx context.Context, catalog string, database str
 func (d *Datasource) GetColumns(ctx context.Context, catalog string, database string, table string) ([]string, error) {
 
 	query := fmt.Sprintf("DESCRIBE TABLE %s.%s.%s", catalog, database, table)
-	backend.Logger.Info("Running DESCRIBE TABLE", "query", query)
+	if d.config.Debug {
+		backend.Logger.Debug("Running DESCRIBE TABLE", "query", query)
+	}
 
 	ctx, cancel := d.contextWithTimeout(ctx)
 	defer cancel()
@@ -488,7 +490,9 @@ func (d *Datasource) GetColumns(ctx context.Context, catalog string, database st
 		columns = append(columns, columnName)
 	}
 
-	backend.Logger.Info("Columns retrieved", "columns", columns)
+	if d.config.Debug {
+		backend.Logger.Debug("Columns retrieved", "columns", columns)
+	}
 	return columns, nil
 }
 
