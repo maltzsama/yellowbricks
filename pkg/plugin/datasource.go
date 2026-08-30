@@ -27,7 +27,6 @@ var (
 type Datasource struct {
 	DB     *sql.DB
 	config *models.PluginSettings
-	
 }
 
 func parseQueryParams(req *backend.CallResourceRequest) (url.Values, error) {
@@ -82,7 +81,7 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(5)
 
-	return &Datasource{ DB: db, config: config, }, nil
+	return &Datasource{DB: db, config: config}, nil
 
 }
 
@@ -105,19 +104,17 @@ func injectCatalogIntoQuery(catalog, rawQuery string) string {
 func sanitizeQueryWithLimit(query string, maxRows int) (string, error) {
 	cleanQuery := strings.TrimSpace(query)
 	cleanQuery = strings.TrimSuffix(cleanQuery, ";")
-	
+
 	upperQuery := strings.ToUpper(cleanQuery)
-	
+
 	if strings.Contains(upperQuery, "LIMIT") {
 		return fmt.Sprintf("%s;", cleanQuery), nil
 	}
-	
+
 	limitedQuery := fmt.Sprintf("%s LIMIT %d;", cleanQuery, maxRows)
-	
+
 	return limitedQuery, nil
 }
-
-
 
 func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 
@@ -165,7 +162,7 @@ func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query b
 			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("failed to apply maxRows: %v", err))
 		}
 	}
-	
+
 	backend.Logger.Info("Running query", "query", adjustedQuery)
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(d.config.Timeout)*time.Second)
@@ -209,7 +206,7 @@ func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query b
 		values[i] = &v
 	}
 
-	for rows.Next() {		  
+	for rows.Next() {
 		if err := rows.Scan(values...); err != nil {
 			return wrapErr("failed to scan row", err)
 		}
@@ -359,7 +356,6 @@ func (d *Datasource) GetColumns(ctx context.Context, catalog string, database st
 
 	query := fmt.Sprintf("DESCRIBE TABLE %s.%s.%s", catalog, database, table)
 	backend.Logger.Info("Running DESCRIBE TABLE", "query", query)
-
 
 	rows, err := d.DB.QueryContext(ctx, query)
 	if err != nil {

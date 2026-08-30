@@ -7,12 +7,12 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/galileo-stdio/yellow-bricks/pkg/models"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
 func TestQueryData_Success(t *testing.T) {
-	
+
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("error opening stub database connection: %v", err)
@@ -91,7 +91,7 @@ func TestQueryData_InvalidPayload(t *testing.T) {
 	if !ok {
 		t.Fatal("missing response for RefID A")
 	}
-	
+
 	if qResp.Status != backend.StatusBadRequest {
 		t.Fatalf("expected StatusBadRequest error, got status %d", qResp.Status)
 	}
