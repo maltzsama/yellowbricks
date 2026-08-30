@@ -19,6 +19,7 @@ const azureCloudOptions: Array<SelectableValue<string>> = [
 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
+  const { jsonData, secureJsonFields, secureJsonData } = options;
 
   useEffect(() => {
     const defaults: Partial<DataBricksSourceOptions> = {
@@ -49,8 +50,6 @@ export function ConfigEditor(props: Props) {
     }
   }, []);
   
-  
-  const { jsonData, secureJsonFields, secureJsonData } = options;
 
   const updateJson = (key: keyof DataBricksSourceOptions, value: any) =>
     onOptionsChange({ ...options, jsonData: { ...jsonData, [key]: value } });
@@ -192,7 +191,10 @@ export function ConfigEditor(props: Props) {
         <Input
           type="number"
           value={jsonData.retries ?? 5}
-          onChange={(e) => updateJson('retries', Number(e.currentTarget.value))}
+          onChange={(e) => {
+            const v = Number(e.currentTarget.value);
+            if (!isNaN(v) && v > 0) { updateJson('retries', v); }
+          }}
           width={40}
         />
       </InlineField>
@@ -201,7 +203,10 @@ export function ConfigEditor(props: Props) {
         <Input
           type="number"
           value={jsonData.pause ?? 0}
-          onChange={(e) => updateJson('pause', Number(e.currentTarget.value))}
+          onChange={(e) => {
+            const v = Number(e.currentTarget.value);
+            if (!isNaN(v) && v >= 0) { updateJson('pause', v); }
+          }}
           width={40}
         />
       </InlineField>
@@ -210,7 +215,10 @@ export function ConfigEditor(props: Props) {
         <Input
           type="number"
           value={jsonData.timeout ?? 60}
-          onChange={(e) => updateJson('timeout', Number(e.currentTarget.value))}
+          onChange={(e) => {
+            const v = Number(e.currentTarget.value);
+            if (!isNaN(v) && v >= 0) { updateJson('timeout', v); }
+          }}
           width={40}
         />
       </InlineField>
@@ -219,7 +227,10 @@ export function ConfigEditor(props: Props) {
         <Input
           type="number"
           value={jsonData.maxRows ?? 10000}
-          onChange={(e) => updateJson('maxRows', Number(e.currentTarget.value))}
+          onChange={(e) => {
+            const v = Number(e.currentTarget.value);
+            if (!isNaN(v) && v > 0) { updateJson('maxRows', v); }
+          }}
           width={40}
         />
       </InlineField>
@@ -228,7 +239,10 @@ export function ConfigEditor(props: Props) {
         <Input
           type="number"
           value={jsonData.retryTimeout ?? 40}
-          onChange={(e) => updateJson('retryTimeout', Number(e.currentTarget.value))}
+          onChange={(e) => {
+            const v = Number(e.currentTarget.value);
+            if (!isNaN(v) && v >= 0) { updateJson('retryTimeout', v); }
+          }}
           width={40}
         />
       </InlineField>
