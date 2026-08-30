@@ -65,6 +65,13 @@ func wrapErr(msg string, err error) backend.DataResponse {
 	return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("%s: %v", msg, err))
 }
 
+func (d *Datasource) contextWithTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
+	if d.config.Timeout > 0 {
+		return context.WithTimeout(ctx, time.Duration(d.config.Timeout)*time.Second)
+	}
+	return ctx, func() {}
+}
+
 func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
 	config, err := models.LoadPluginSettings(settings)
 	if err != nil {
@@ -165,7 +172,7 @@ func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query b
 
 	backend.Logger.Info("Running query", "query", adjustedQuery)
 
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(d.config.Timeout)*time.Second)
+	ctx, cancel := d.contextWithTimeout(ctx)
 	defer cancel()
 
 	rows, err := d.DB.QueryContext(ctx, adjustedQuery)
@@ -304,7 +311,7 @@ func (d *Datasource) GetDatabases(ctx context.Context, catalog string) ([]string
 
 	query := fmt.Sprintf("SHOW SCHEMAS IN %s", catalog)
 
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(d.config.Timeout)*time.Second)
+	ctx, cancel := d.contextWithTimeout(ctx)
 	defer cancel()
 
 	rows, err := d.DB.QueryContext(ctx, query)
@@ -328,7 +335,7 @@ func (d *Datasource) GetTables(ctx context.Context, catalog string, database str
 
 	query := fmt.Sprintf("SHOW TABLES IN %s.%s", catalog, database)
 
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(d.config.Timeout)*time.Second)
+	ctx, cancel := d.contextWithTimeout(ctx)
 	defer cancel()
 
 	rows, err := d.DB.QueryContext(ctx, query)
@@ -356,6 +363,9 @@ func (d *Datasource) GetColumns(ctx context.Context, catalog string, database st
 
 	query := fmt.Sprintf("DESCRIBE TABLE %s.%s.%s", catalog, database, table)
 	backend.Logger.Info("Running DESCRIBE TABLE", "query", query)
+
+	ctx, cancel := d.contextWithTimeout(ctx)
+	defer cancel()
 
 	rows, err := d.DB.QueryContext(ctx, query)
 	if err != nil {
