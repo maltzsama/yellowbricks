@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { CodeEditor, InlineField, InlineFieldRow } from '@grafana/ui';
+import { CodeEditor, InlineField, InlineFieldRow, useTheme2 } from '@grafana/ui';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataBricksDataSource } from '../../datasource';
 import { DatabricksQuery, DataBricksSourceOptions, FieldSelection, FilterCondition } from '../../types';
@@ -15,6 +15,7 @@ import { FilterBuilder } from './Builders/FilterBuilder';
 interface Props extends QueryEditorProps<DataBricksDataSource, DatabricksQuery, DataBricksSourceOptions> { }
 
 export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props): ReactElement {
+  const theme = useTheme2();
   
   const [format, setFormat] = useState<string>(query.format || 'table');
   const [enableFilter, setEnableFilter] = useState<boolean>(query.enableFilter ?? false);
@@ -274,10 +275,10 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props):
           <div
             style={{
               padding: '8px',
-              backgroundColor: 'rgb(34, 37, 43)',
+              backgroundColor: theme.colors.background.canvas,
               borderRadius: 2,
               marginTop: '8px',
-              boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
+              boxShadow: `inset 0 0 0 1px ${theme.colors.action.focus}`,
             }}
           >
             <ColumnBuilder
