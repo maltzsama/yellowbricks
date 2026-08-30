@@ -81,7 +81,7 @@ YellowBricks is developed and maintained by **Galileo Stdio**.
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/galileo-stdio/yellow-bricks-datasource.git
+   git clone https://github.com/maltzsama/yellow-bricks-datasource.git
    cd yellow-bricks-datasource
    ```
 

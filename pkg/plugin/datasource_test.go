@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/galileo-stdio/yellow-bricks/pkg/models"
+	"github.com/maltzsama/yellow-bricks/pkg/models"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 

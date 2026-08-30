@@ -1,4 +1,4 @@
-module github.com/galileo-stdio/yellow-bricks
+module github.com/maltzsama/yellow-bricks
 
 go 1.23.5
 

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/galileo-stdio/yellow-bricks/pkg/plugin"
+	"github.com/maltzsama/yellow-bricks/pkg/plugin"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 )

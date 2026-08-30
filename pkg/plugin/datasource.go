@@ -10,7 +10,7 @@ import (
 	"time"
 
 	_ "github.com/databricks/databricks-sql-go"
-	"github.com/galileo-stdio/yellow-bricks/pkg/models"
+	"github.com/maltzsama/yellow-bricks/pkg/models"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
