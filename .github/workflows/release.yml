@@ -1,9 +1,11 @@
+# This GitHub Action automates the process of building Grafana plugins.
+# (For more information, see https://github.com/grafana/plugin-actions/blob/main/build-plugin/README.md)
 name: Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*' # Run workflow on version tags, e.g. v1.0.0.
 
 permissions: read-all
 
@@ -14,45 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install frontend dependencies
-        run: npm ci --prefer-offline
-
-      - name: Build plugin frontend
-        run: npm run build
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-
-      - name: Build plugin backend
-        uses: magefile/mage-action@v3
-        with:
-          version: latest
-          args: buildAll
-
-      - name: Validate plugin
-        uses: grafana/plugin-actions/validate-plugin@main
-        with:
-          plugin-path: dist
-
-      - name: Sign plugin
-        run: npm run sign
-        env:
-          GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
-
-      - name: Package plugin
-        run: |
-          zip -r ${{ github.event.repository.name }}-${{ github.ref_name }}.zip dist/
-
-      - name: Upload release artifact
-        run: gh release upload "$GITHUB_REF_NAME" "${{ github.event.repository.name }}-${{ github.ref_name }}.zip"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: grafana/plugin-actions/build-plugin@main
+        # Uncomment to enable plugin signing
+        # (For more info on how to generate the access policy token see https://grafana.com/developers/plugin-tools/publish-a-plugin/sign-a-plugin#generate-an-access-policy-token)
+        #with:
+        # Make sure to save the token in your repository secrets
+        #policy_token: $
+        # Usage of GRAFANA_API_KEY is deprecated, prefer `policy_token` option above
+        #grafana_token: $
