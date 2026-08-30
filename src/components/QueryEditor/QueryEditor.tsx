@@ -89,7 +89,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props):
           const logic = idx === 0 ? '' : ` ${f.condition || 'AND'} `;
           const col = f.column;
           const op = f.operator;
-          const val = f.value;
+          const val = f.value ? f.value.replace(/'/g, "''") : '';
 
           if (['IS NULL', 'IS NOT NULL'].includes(op)) {
             return `${logic}${col} ${op}`;
