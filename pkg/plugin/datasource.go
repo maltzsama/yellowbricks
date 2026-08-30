@@ -101,13 +101,77 @@ func (d *Datasource) Dispose() {
 }
 
 func injectCatalogIntoQuery(catalog, rawQuery string) string {
-
-	const fromKeyword = "FROM "
-	index := strings.Index(strings.ToUpper(rawQuery), fromKeyword)
-	if index == -1 {
+	parser := sqlparser.NewTestParser()
+	stmt, err := parser.Parse(rawQuery)
+	if err != nil {
 		return rawQuery
 	}
-	return rawQuery[:index+len(fromKeyword)] + catalog + "." + rawQuery[index+len(fromKeyword):]
+
+	sel, ok := stmt.(*sqlparser.Select)
+	if !ok {
+		return rawQuery
+	}
+
+	tables := extractTableNames(sel)
+	result := rawQuery
+
+	for _, tbl := range tables {
+		qualifier := tbl.Qualifier
+		name := tbl.Name
+
+		var oldRef, newRef string
+		switch {
+		case qualifier == "":
+			oldRef = name
+			newRef = catalog + "." + name
+		case qualifier == catalog || strings.HasPrefix(qualifier, catalog+"."):
+			continue
+		default:
+			oldRef = qualifier + "." + name
+			newRef = catalog + "." + qualifier + "." + name
+		}
+
+		result = injectBeforeTableRef(result, oldRef, newRef)
+	}
+
+	return result
+}
+
+type tableNameRef struct {
+	Qualifier string
+	Name      string
+}
+
+func extractTableNames(sel *sqlparser.Select) []tableNameRef {
+	var tables []tableNameRef
+	for _, expr := range sel.From {
+		collectTableNames(expr, &tables)
+	}
+	return tables
+}
+
+func collectTableNames(expr sqlparser.TableExpr, tables *[]tableNameRef) {
+	switch e := expr.(type) {
+	case *sqlparser.AliasedTableExpr:
+		if tbl, ok := e.Expr.(sqlparser.TableName); ok {
+			*tables = append(*tables, tableNameRef{
+				Qualifier: tbl.Qualifier.String(),
+				Name:      tbl.Name.String(),
+			})
+		}
+	case *sqlparser.JoinTableExpr:
+		collectTableNames(e.LeftExpr, tables)
+		collectTableNames(e.RightExpr, tables)
+	case *sqlparser.ParenTableExpr:
+		for _, inner := range e.Exprs {
+			collectTableNames(inner, tables)
+		}
+	}
+}
+
+func injectBeforeTableRef(query, oldRef, newRef string) string {
+	re := regexp.MustCompile(`(?i)\b` + regexp.QuoteMeta(oldRef) + `\b`)
+	return re.ReplaceAllString(query, newRef)
 }
 
 func sanitizeQueryWithLimit(query string, maxRows int) (string, error) {

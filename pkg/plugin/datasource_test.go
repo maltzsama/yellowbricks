@@ -98,6 +98,31 @@ func TestQueryData_InvalidPayload(t *testing.T) {
 	}
 }
 
+func TestInjectCatalogIntoQuery(t *testing.T) {
+	tests := []struct {
+		name    string
+		catalog string
+		query   string
+		want    string
+	}{
+		{"simple from", "my_catalog", "SELECT * FROM my_schema.my_table", "SELECT * FROM my_catalog.my_schema.my_table"},
+		{"from with where", "my_catalog", "SELECT id FROM my_schema.my_table WHERE id = 1", "SELECT id FROM my_catalog.my_schema.my_table WHERE id = 1"},
+		{"single table name", "my_catalog", "SELECT * FROM my_table", "SELECT * FROM my_catalog.my_table"},
+		{"with join", "my_catalog", "SELECT * FROM my_schema.t1 JOIN other_schema.t2 ON t1.id = t2.id", "SELECT * FROM my_catalog.my_schema.t1 JOIN my_catalog.other_schema.t2 ON t1.id = t2.id"},
+		{"already qualified", "my_catalog", "SELECT * FROM my_catalog.my_schema.my_table", "SELECT * FROM my_catalog.my_schema.my_table"},
+		{"lowercase from", "my_catalog", "select * from my_schema.my_table", "select * from my_catalog.my_schema.my_table"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := injectCatalogIntoQuery(tt.catalog, tt.query)
+			if got != tt.want {
+				t.Errorf("injectCatalogIntoQuery(%q, %q) = %q, want %q", tt.catalog, tt.query, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestValidateQuery(t *testing.T) {
 	tests := []struct {
 		name    string
