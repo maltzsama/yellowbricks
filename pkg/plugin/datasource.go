@@ -11,10 +11,10 @@ import (
 	"time"
 
 	_ "github.com/databricks/databricks-sql-go"
-	"github.com/maltzsama/yellow-bricks/pkg/models"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
+	"github.com/maltzsama/yellow-bricks/pkg/models"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
