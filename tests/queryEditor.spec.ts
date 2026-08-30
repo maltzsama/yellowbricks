@@ -1,6 +1,9 @@
 import { test, expect } from '@grafana/plugin-e2e';
+import { mockDatabricksResources } from './mocks';
 
-test('query editor: should load databases and tables correctly', async ({ panelEditPage, readProvisionedDataSource }) => {
+test('query editor: should load databases and tables correctly', async ({ panelEditPage, readProvisionedDataSource, page }) => {
+  mockDatabricksResources(page);
+
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
 
@@ -17,7 +20,9 @@ test('query editor: should load databases and tables correctly', async ({ panelE
   expect(optionsCount).toBeGreaterThan(0);
 });
 
-test('query editor: should preview SQL query', async ({ panelEditPage, readProvisionedDataSource }) => {
+test('query editor: should preview SQL query', async ({ panelEditPage, readProvisionedDataSource, page }) => {
+  mockDatabricksResources(page);
+
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
 
