@@ -51,14 +51,6 @@ func validateQuery(query string) error {
 		return fmt.Errorf("only SELECT queries are allowed")
 	}
 
-	dangerousKeywords := []string{"DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "TRUNCATE"}
-	upperQuery := strings.ToUpper(query)
-	for _, kw := range dangerousKeywords {
-		if strings.Contains(upperQuery, kw) {
-			return fmt.Errorf("dangerous keyword detected: %s", kw)
-		}
-	}
-
 	return nil
 }
 
