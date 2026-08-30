@@ -1,7 +1,7 @@
 services:
   grafana:
     user: root
-    container_name: 'galileostdio-yellowbricks-datasource'
+    container_name: 'maltzsama-yellowbricks-datasource'
 
     build:
       context: .
@@ -19,13 +19,13 @@ services:
     cap_add:
       - SYS_PTRACE
     volumes:
-      - ../dist:/var/lib/grafana/plugins/galileostdio-yellowbricks-datasource
+      - ../dist:/var/lib/grafana/plugins/maltzsama-yellowbricks-datasource
       - ../provisioning:/etc/grafana/provisioning
-      - ..:/root/galileostdio-yellowbricks-datasource
+      - ..:/root/maltzsama-yellowbricks-datasource
 
     environment:
       NODE_ENV: development
-      GF_LOG_FILTERS: plugin.galileostdio-yellowbricks-datasource:debug
+      GF_LOG_FILTERS: plugin.maltzsama-yellowbricks-datasource:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: galileostdio-yellowbricks-datasource
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: maltzsama-yellowbricks-datasource

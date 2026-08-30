@@ -2,10 +2,10 @@
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "datasource",
   "name": "YellowBricks",
-  "id": "galileostdio-yellowbricks-datasource",
+  "id": "maltzsama-yellowbricks-datasource",
   "metrics": true,
   "backend": true,
-  "executable": "gpx_yellow_bricks",
+  "executable": "gpx_maltzsama-yellowbricks-datasource",
   "info": {
     "description": "YellowBricks is a Grafana datasource plugin for Databricks that provides an intuitive, dynamic query builder, enabling users to easily construct, filter, group, and preview SQL queries.",
     "author": {
