@@ -16,12 +16,7 @@ interface Props extends QueryEditorProps<DataBricksDataSource, DatabricksQuery, 
 
 export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props): ReactElement {
   
-  if (!query.format) {
-    onChange({ ...query, format: 'table' });
-    return <></>;
-  }
-
-  const [format, setFormat] = useState<string>('table');
+  const [format, setFormat] = useState<string>(query.format || 'table');
   const [enableFilter, setEnableFilter] = useState<boolean>(query.enableFilter ?? false);
   const [enableGroup, setEnableGroup] = useState<boolean>(query.enableGroup ?? false);
   const [enableOrder, setEnableOrder] = useState<boolean>(query.enableOrder ?? false);
