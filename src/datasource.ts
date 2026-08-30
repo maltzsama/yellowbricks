@@ -9,7 +9,14 @@ export class DataBricksDataSource extends DataSourceWithBackend<DatabricksQuery,
   }
 
   getDefaultQuery(_: CoreApp): Partial<DatabricksQuery> {
-    return DEFAULT_QUERY;
+    return {
+      ...DEFAULT_QUERY,
+      format: 'table',
+      enableFilter: false,
+      enableGroup: false,
+      enableOrder: false,
+      enablePreview: true,
+    };
   }
 
   applyTemplateVariables(query: DatabricksQuery, scopedVars: ScopedVars) {

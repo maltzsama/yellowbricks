@@ -16,13 +16,8 @@ interface Props extends QueryEditorProps<DataBricksDataSource, DatabricksQuery, 
 
 export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props): ReactElement {
   const theme = useTheme2();
-  
-  const [format, setFormat] = useState<string>(query.format || 'table');
-  const [enableFilter, setEnableFilter] = useState<boolean>(query.enableFilter ?? false);
-  const [enableGroup, setEnableGroup] = useState<boolean>(query.enableGroup ?? false);
-  const [enableOrder, setEnableOrder] = useState<boolean>(query.enableOrder ?? false);
-  const [enablePreview, setEnablePreview] = useState<boolean>(query.enablePreview ?? true);
 
+  const [format, setFormat] = useState<string>(query.format || 'table');
   const [mode, setMode] = useState<'visual' | 'raw'>(query.queryText ? 'raw' : 'visual');
   const [databases, setDatabases] = useState<Array<SelectableValue<string>>>([]);
   const [tables, setTables] = useState<Array<SelectableValue<string>>>([]);
@@ -36,27 +31,9 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props):
     { label: 'MAX', value: 'MAX' },
   ];
 
-  const handleGroupByChange = (columns: string[]) => {
-    onChange({ ...query, groupBy: columns });
+  const handleGroupByChange = (groupCols: string[]) => {
+    onChange({ ...query, groupBy: groupCols });
   };
-
-  useEffect(() => {
-    if (query.format !== 'table' && query.format !== 'timeseries') {
-      onChange({ ...query, format: 'table' });
-    }
-  }, []);
-  
-
-  useEffect(() => {
-    onChange({
-      ...query,
-      enableFilter,
-      enableGroup,
-      enableOrder,
-      enablePreview,
-    });
-  }, [enableFilter, enableGroup, enableOrder, enablePreview]);
-
 
   useEffect(() => {
     datasource.getResource('databases').then((dbs) =>
@@ -70,7 +47,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props):
         setColumns([{ label: '*', value: '*' }, ...cols.map((col: string) => ({ label: col, value: col }))])
       );
     }
-  }, [query.database, query.table]);
+  }, [datasource, query.database, query.table]);
 
   useEffect(() => {
     if (mode === 'visual' && query.database && query.table && query.fields?.length) {
@@ -143,8 +120,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props):
 
       onChange({ ...query, queryText: sql });
     }
-  }, [query.database, query.table, query.fields, query.enableOrder, query.groupBy, query.orderBy, query.orderDirection, query.limit, query.filters, query.enableFilter, mode]);
-
+  }, [query.database, query.table, query.fields, query.enableOrder, query.groupBy, query.orderBy, query.orderDirection, query.limit, query.filters, query.enableFilter, mode, onChange, query]);
 
   const onDatabaseChange = (v: SelectableValue<string>) => {
     onChange({ ...query, database: v.value, table: undefined, fields: [] });
@@ -215,27 +191,19 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props):
   };
 
   const handleToggleFilter = () => {
-    const value = !enableFilter;
-    setEnableFilter(value);
-    onChange({ ...query, enableFilter: value });
+    onChange({ ...query, enableFilter: !query.enableFilter });
   };
 
   const handleToggleGroup = () => {
-    const value = !enableGroup;
-    setEnableGroup(value);
-    onChange({ ...query, enableGroup: value });
+    onChange({ ...query, enableGroup: !query.enableGroup });
   };
 
   const handleToggleOrder = () => {
-    const value = !enableOrder;
-    setEnableOrder(value);
-    onChange({ ...query, enableOrder: value });
+    onChange({ ...query, enableOrder: !query.enableOrder });
   };
 
   const handleTogglePreview = () => {
-    const value = !enablePreview;
-    setEnablePreview(value);
-    onChange({ ...query, enablePreview: value });
+    onChange({ ...query, enablePreview: !query.enablePreview });
   };
 
   const handleModeToggle = (selectedMode: 'visual' | 'raw') => {
@@ -248,10 +216,10 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props):
       <QueryToolbar
         format={format}
         onFormatChange={handleFormatChange}
-        enableFilter={enableFilter}
-        enableGroup={enableGroup}
-        enableOrder={enableOrder}
-        enablePreview={enablePreview}
+        enableFilter={query.enableFilter ?? false}
+        enableGroup={query.enableGroup ?? false}
+        enableOrder={query.enableOrder ?? false}
+        enablePreview={query.enablePreview ?? true}
         onToggleFilter={handleToggleFilter}
         onToggleGroup={handleToggleGroup}
         onToggleOrder={handleToggleOrder}

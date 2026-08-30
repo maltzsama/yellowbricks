@@ -48,7 +48,7 @@ export function ConfigEditor(props: Props) {
         },
       });
     }
-  }, []);
+  }, [jsonData, onOptionsChange, options]);
   
 
   const updateJson = (key: keyof DataBricksSourceOptions, value: any) =>
