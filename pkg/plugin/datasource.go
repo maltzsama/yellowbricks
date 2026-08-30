@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -63,6 +64,15 @@ func validateQuery(query string) error {
 
 func wrapErr(msg string, err error) backend.DataResponse {
 	return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("%s: %v", msg, err))
+}
+
+var validIdentifier = regexp.MustCompile(`^[A-Za-z0-9_]+$`)
+
+func validateIdentifier(name, label string) error {
+	if !validIdentifier.MatchString(name) {
+		return fmt.Errorf("invalid %s: must contain only letters, numbers, and underscores", label)
+	}
+	return nil
 }
 
 func (d *Datasource) contextWithTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -271,6 +281,10 @@ func (d *Datasource) CallResource(ctx context.Context, req *backend.CallResource
 			return sendError(sender, backend.StatusBadRequest, "Database is required")
 		}
 
+		if err := validateIdentifier(database, "database"); err != nil {
+			return sendError(sender, backend.StatusBadRequest, err.Error())
+		}
+
 		tables, err := d.GetTables(ctx, catalog, database)
 		if err != nil {
 			return sendError(sender, backend.StatusInternal, err.Error())
@@ -294,6 +308,13 @@ func (d *Datasource) CallResource(ctx context.Context, req *backend.CallResource
 		table := u.Get("table")
 		if table == "" {
 			return sendError(sender, backend.StatusBadRequest, "Table is required")
+		}
+
+		if err := validateIdentifier(database, "database"); err != nil {
+			return sendError(sender, backend.StatusBadRequest, err.Error())
+		}
+		if err := validateIdentifier(table, "table"); err != nil {
+			return sendError(sender, backend.StatusBadRequest, err.Error())
 		}
 
 		columns, err := d.GetColumns(ctx, catalog, database, table)
